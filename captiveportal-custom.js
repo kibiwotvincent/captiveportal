@@ -259,7 +259,7 @@ $(function () {
 		if(userToLogin != "") {
 			userToLogin = JSON.parse(userToLogin);
 			//sync local and online database first
-			$.post(localServerAddress+'sync-user.php', {'token':userToLogin.api_auth_token}, function(jsonResponse) {
+			$.post('', {'sync': 1, 'token':userToLogin.api_auth_token}, function(jsonResponse) {
 				if(jsonResponse.status == 0) {
 					return false;
 				}	
