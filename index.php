@@ -3,6 +3,8 @@
 		$syncUserUrl = "http://192.168.1.104/bytesbay/sync-user.php";
 		
 		$APIAuthToken = $_POST['token'];
+		$response = file_get_contents($syncUserUrl."?token=".$APIAuthToken);
+		die($response);
 		
 		$headers = [
 					"Accept: application/json",
