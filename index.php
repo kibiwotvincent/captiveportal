@@ -1,6 +1,6 @@
 <?php
 	if(isset($_POST['sync']) && $_POST['sync']) {
-		$syncUserUrl = "http://localhost/bytesbay-local/sync-user.php";
+		$syncUserUrl = "http://192.168.1.104/bytesbay/sync-user.php";
 		
 		$APIAuthToken = $_POST['token'];
 		
@@ -59,7 +59,7 @@
         <meta name="description" content="">
         <meta name="keywords" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="_local_server_address" content="http://localhost/bytesbay-local/">
+        <meta name="_local_server_address" content="http://192.168.1.104/bytesbay/">
         <meta name="_online_server_address" content="https://bytesbay.naet-tech.com/">
 		
 		<link rel="icon" href="/favicon.PNG" type="image/png" />
