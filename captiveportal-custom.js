@@ -32,6 +32,7 @@ $(function () {
 					headers: {'Authorization': 'Bearer '+user.api_auth_token},
 					success: function(response){ 
 						user = response.data;
+						console.log(user);
 						
 						fetchPlans();
 						writeSession('user', JSON.stringify(user));
@@ -259,8 +260,7 @@ $(function () {
 		if(userToLogin != "") {
 			userToLogin = JSON.parse(userToLogin);
 			//sync local and online database first
-			$.post('', {'sync': 1, 'token':userToLogin.api_auth_token}, function(jsonResponse) {
-				console.log(jsonResponse);
+			$.post(localServerAddress+'sync-user.php', {'username': userToLogin.phone_number, 'token':userToLogin.hotspot_login_token}, function(jsonResponse) {
 				if(jsonResponse.status == 0) {
 					return false;
 				}	
@@ -270,7 +270,7 @@ $(function () {
 					let password = jsonResponse.password;
 					$('#auth-user').val(username);
 					$('#auth-pass').val(password);
-					//$('#original_login_form').submit();
+					$('#original_login_form').submit();
 					return true;
 				}
 			}, 'json');
