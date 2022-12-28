@@ -260,6 +260,7 @@ $(function () {
 			userToLogin = JSON.parse(userToLogin);
 			//sync local and online database first
 			$.post('', {'sync': 1, 'token':userToLogin.api_auth_token}, function(jsonResponse) {
+				console.log(jsonResponse);
 				if(jsonResponse.status == 0) {
 					return false;
 				}	
@@ -269,7 +270,7 @@ $(function () {
 					let password = jsonResponse.password;
 					$('#auth-user').val(username);
 					$('#auth-pass').val(password);
-					$('#original_login_form').submit();
+					//$('#original_login_form').submit();
 					return true;
 				}
 			}, 'json');

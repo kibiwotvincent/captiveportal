@@ -1,130 +1,51 @@
 <?php
 	if(isset($_POST['sync']) && $_POST['sync']) {
-		$host = "localhost";
-		$username = "veen";
-		$password = "admin";
-		$dbName = "radiusdb";
-		$charset='utf8';
-		$syncUserUrl = "https://bytesbay.naet-tech.com/api/sync-user";
-
-		$dsn="mysql:host=$host;dbname=$dbName;charset=$charset";
-		$opt=[
-		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-		PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-		PDO::ATTR_EMULATE_PREPARES => false,
-		];
-		
-		$pdo=new PDO($dsn,$username,$password,$opt);
+		$syncUserUrl = "http://localhost/bytesbay-local/sync-user.php";
 		
 		$APIAuthToken = $_POST['token'];
 		
 		$headers = [
 					"Accept: application/json",
-					"Authorization: Bearer ".$APIAuthToken
 					];
+					
+		$params = ['token' => $APIAuthToken];
 					
 		$options = [
 					  CURLOPT_URL => $syncUserUrl,
 					  CURLOPT_RETURNTRANSFER => 1,
 					  CURLOPT_TIMEOUT => 20,
 					  CURLOPT_HTTPHEADER => $headers,
+					  CURLOPT_POST => 1,
+					  CURLOPT_POSTFIELDS => $params,
 					  //for debug only
 					  CURLOPT_SSL_VERIFYHOST => false,
 					  CURLOPT_SSL_VERIFYPEER => false,
 					];
 		
-		$requestResponse['response'] = json_encode([]);
-		$requestResponse['status_code'] = 0;
-		$requestResponse['status'] = false;
+		$response = json_encode([]);
 				
 		try {
 			if ($curl = curl_init()) {
 				if (curl_setopt_array($curl, $options)) {
 					if ($response = curl_exec($curl)) {
-						$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-						
-						$requestResponse['status_code'] = $httpCode;
-						$requestResponse['response'] = $response;
-						if($httpCode === 200) {
-							$requestResponse['status'] = true;
-							
-						}
 						curl_close($curl);
 					} else {
 						throw new Exception(curl_error($curl));
-						$requestResponse['status'] = false;
 					}
 				} else {
 					throw new Exception(curl_error($curl));
-					$requestResponse['status'] = false;
 				}
 			} else {
 				throw new Exception('unable to initialize cURL');
-				$requestResponse['status'] = false;
 			}
 		} catch (Exception $e) {
 			if (is_resource($curl)) {
 				curl_close($curl);
 			}
 			throw $e;
-			$requestResponse['status'] = false;
 		}
 		
-		//update local user
-		$synced = false;
-		$phoneNumber = null;
-		$hotspotLoginToken = null;
-		
-		if($requestResponse['status_code'] == 200) {
-			//server returns JSON with phone number and hotspot login token
-			$responseArray = json_decode($requestResponse['response'], true);
-			
-			$phoneNumber = $responseArray['phone_number'];
-			$hotspotLoginToken = $responseArray['hotspot_login_token'];
-			
-			//insert or update local user
-			//first check if user exists
-			$stmt = $pdo->prepare("SELECT * FROM radcheck WHERE username=:username LIMIT 1");
-			$stmt->execute(['username' => $phoneNumber]);
-			$user = [];
-			while($row = $stmt->fetch()) {
-				$user = $row;
-			}
-			
-			if(empty($user)) { 
-				//insert new user
-				$user = array('username' => $phoneNumber,'attribute' => "Cleartext-Password",'op' => ":=",'value' => $hotspotLoginToken);
-		
-				$stmt = $pdo->prepare("INSERT INTO radcheck(username,attribute,op,value) VALUES(:username, :attribute, :op, :value)");
-				$stmt->execute($user);
-				if($stmt->rowCount() > 0) {
-					//user synced
-					$synced = true;
-				}
-			}
-			else {
-				//update user only if hotspot_login_token has changed
-				if($user['value'] != $hotspotLoginToken) {
-					$stmt = $pdo->prepare("UPDATE radcheck SET value=:value WHERE username=:username");
-					$status = $stmt->execute(['value' => $hotspotLoginToken, 'username' => $phoneNumber]);
-					if($stmt->rowCount() > 0) {
-						//user synced
-						$synced = true;
-					}
-				}
-				else {
-					$synced = true;
-				}
-			}
-			$pdo = null;
-		}
-		
-		if($synced) {
-			print json_encode(['status' => 1, 'username' => $phoneNumber, 'password' => $hotspotLoginToken]);
-		}
-		else {
-			print json_encode(['status' => 0]);
-		}
+		print($response);
 		die();
 	}
 ?>
