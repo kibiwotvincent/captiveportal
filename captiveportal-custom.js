@@ -1,11 +1,10 @@
 $(function () {
 	const localServerAddress = $('meta[name="_local_server_address"]').attr('content');
 	const onlineServerAddress = $('meta[name="_online_server_address"]').attr('content');
-	const userPhoneNumber = readSession('user-phone-number');
-	var _activePanel = readSession('active-panel');
-	var loggedInUser = readSession('user');
-	var user = null;
 	
+	var _activePanel = readSession('active-panel');
+	
+	//set form to display
 	if(_activePanel == null || _activePanel == "") {
 		setActivePanel("login-panel");
 	}
@@ -13,16 +12,16 @@ $(function () {
 		setActivePanel(_activePanel);
 	}
 	
-	if(userPhoneNumber != "") {
-		$('.user-phone-number').val(userPhoneNumber);
-	}
 	
+	var loggedInUser = readSession('user');
+	var user = null;
 	if(loggedInUser !== null && loggedInUser !== "undefined") {
 		if(_activePanel == "login-panel") {
 			//redirect user to account if logged in already
 			setActivePanel("subscriptions-panel");
 		}
 		else {
+			//refresh user
 			user = JSON.parse(loggedInUser);
 			$.ajax({
 					type: "GET",
@@ -32,32 +31,10 @@ $(function () {
 					headers: {'Authorization': 'Bearer '+user.api_auth_token},
 					success: function(response){ 
 						user = response.data;
-						console.log(user);
-						
-						fetchPlans();
+						renderSubscriptionsPanel(user);
 						writeSession('user', JSON.stringify(user));
-						$('#paying-phone-number').val(user.phone_number);
-						//fill user balance and subscription notice
-						$('.user-balance').html(user.balance_string);
-						$('.allow-until').html(user.allow_until_string);
-						
-						if(user.subscribed == 1) {
-							$('.subscribed').removeClass('d-none');
-							$('.not-subscribed').addClass('d-none');
-							doLogin();
-						}
-						else {
-							$('.not-subscribed').removeClass('d-none');
-							$('.subscribed').addClass('d-none');
-						}
 					}
 			});
-		}
-	}
-	else {
-		if(_activePanel == "subscriptions-panel" || _activePanel == "deposit-panel") {
-			setActivePanel("login-panel");
-			refreshPage();
 		}
 	}
 	
@@ -170,7 +147,7 @@ $(function () {
 					setActivePanel(nextPanel);
 				}
 				
-				window.location.reload(true);
+				refreshPage();
 			},
 			error: function(response) {
 				let jsonResponse = response.responseJSON;
@@ -243,6 +220,18 @@ $(function () {
 	
 	function setActivePanel(activePanel) {
 		writeSession('active-panel', activePanel);
+		
+		if(activePanel == "subscriptions-panel") {
+			fetchPlans();
+		}
+		if(activePanel == "reset-password-panel") {
+			const userPhoneNumber = readSession('user-phone-number');
+			//populate phone number when resetting password
+			if(userPhoneNumber != "") {
+				$('.user-phone-number').val(userPhoneNumber);
+			}
+		}
+		
 		//hide all other panels
 		$('.panel').each(function(i) {
 			if($(this).attr('id') == activePanel) {
@@ -253,11 +242,26 @@ $(function () {
 			}
 		});
 	}
+	function renderSubscriptionsPanel(user) {
+		$('#paying-phone-number').val(user.phone_number);
+		//fill user balance and subscription notice
+		$('.user-balance').html(user.balance_string);
+		$('.allow-until').html(user.allow_until_string);
+		
+		if(user.subscribed == 1) {
+			$('.subscribed').removeClass('d-none');
+			$('.not-subscribed').addClass('d-none');
+			doLogin();
+		}
+		else {
+			$('.not-subscribed').removeClass('d-none');
+			$('.subscribed').addClass('d-none');
+		}
+	}
 	
 	function doLogin() {
 		let userToLogin = readSession('user');
-		
-		if(userToLogin != "") {
+		if(userToLogin !== null && userToLogin !== "undefined" && userToLogin != "") {
 			userToLogin = JSON.parse(userToLogin);
 			//sync local and online database first
 			$.post(localServerAddress+'sync-user.php', {'username': userToLogin.phone_number, 'token':userToLogin.hotspot_login_token}, function(jsonResponse) {
