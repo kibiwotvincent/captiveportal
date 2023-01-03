@@ -202,7 +202,7 @@ $(function () {
 	}
 	
 	function refreshPage() {
-		window.location.reload(true);
+		//window.location.reload(true);
 	}
 	
 	function writeSession(sessionName, sessionValue) {
