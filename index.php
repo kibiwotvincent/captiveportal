@@ -1,3 +1,20 @@
+<?php
+	$onlineServer = "http://www.bytesbay.com/";
+	$localServer = "http://localhost/bytesbay/";
+	$username = null;
+	$password = null;
+
+	if(! isset($_GET['u']) || ! isset($_GET['p'])) {
+		//redirect to online server
+		$url = urlencode($_SERVER['REQUEST_SCHEME']."://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+		
+		header('Location: '.$onlineServer.'prep-hotspot-login?r='.$url);
+	}
+	else {
+		$username = $_GET['u'];
+		$password = $_GET['p'];
+	}
+?>
 <!doctype html>
 <html class="no-js" lang="en">
     <head>
@@ -8,8 +25,8 @@
         <meta name="description" content="">
         <meta name="keywords" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="_local_server_address" content="http://localhost/bytesbay/">
-        <meta name="_online_server_address" content="https://bytesbay.naet-tech.com/">
+        <meta name="_local_server_address" content="<?php echo $localServer; ?>">
+        <meta name="_online_server_address" content="<?php echo $onlineServer; ?>">
 		
 		<link rel="icon" href="/favicon.png" type="image/png" />
         
@@ -44,48 +61,31 @@
                     </div>
                     <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
                         <!--login panel-->
-						<div class="authentication-form panel mx-auto d-non" style="padding: 50px 0px 50px 0px" id="login-panel">
+						<div class="authentication-form mx-auto" style="padding: 50px 0px 50px 0px">
                             <h3>Sign In to BytesBay</h3>
                             <p>Happy to see you again!</p>
 							   
-                            <form class="ajax" id="login_form" action="api/login" method="post">
-								<input type="hidden" name="_next" value="subscriptions-panel" />
-								<input type="hidden" name="_current" value="login-panel" />
+                            <form class="ajax" id="login_form" action="$PORTAL_ACTION$" method="post">
 								<div class="form-group">
-									<input type="text" name="phone_number" class="form-control" placeholder="Phone Number" required="" >
+									<input type="text" name="auth_user" id="auth-user" class="form-control" placeholder="Phone Number" value="<?php echo $username; ?>" >
 									<i class="ik ik-phone"></i>
 									<p class="d-none error" for="phone_number"></p>
 								</div>
 								<div class="form-group">
-									<input type="password" name="password" class="form-control" placeholder="Password" required="">
+									<input type="password" name="auth_pass" id="auth-pass" class="form-control" placeholder="Password" value="<?php echo $password; ?>" >
 									<i class="ik ik-lock"></i>
 									<p class="d-none error" for="password"></p>
 								</div>
-								<div class="form-group text-right">
-									<a class="forgot-password-link text-danger" href="#">Forgot Password ?</a>
-								</div>
+								<input name="auth_voucher" type="hidden">
+								<input name="redirurl" type="hidden" value="$PORTAL_REDIRURL$">
+								<input name="zone" type="hidden" value="$PORTAL_ZONE$">
 								<div id="login_form_feedback"></div>
 								<div class="text-center mt-3">
 									<button type="submit" class="btn btn-theme mr-2" id="login_form_submit">Sign In</button>
 								</div>
 							</form>
-                            
-                            <div class="register">
-                                <p>Don't have an account? <a class="register-link text-danger" href="#">Create an account</a></p>
-                            </div>
                         </div>
 						<!--end login panel-->
-						<!--original login panel-->
-						<form method="post" action="$PORTAL_ACTION$" class="d-non" id="original_login_form">
-							<input name="auth_user" type="hidde" id="auth-user">
-							<input name="auth_pass" type="hidde" id="auth-pass">
-							<input name="auth_voucher" type="hidden">
-						    <input name="redirurl" type="hidden" value="$PORTAL_REDIRURL$">
-						    <input name="zone" type="hidden" value="$PORTAL_ZONE$">
-							
-							<input type="submit" name="accept" class="btn btn-theme d-non" id="original_login_form_submit" value="Sign In" >
-						</form>
-						<!--end original login panel-->
                     </div>
                 </div>
             </div>
