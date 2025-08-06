@@ -13,7 +13,9 @@
         $encodedReturnUrl = urlencode($currentUrl);
         
         // Redirect to the online login page
-        header("Location: " . $onlineServer . "prep-hotspot-login?r=" . $encodedReturnUrl);
+        //header("Location: " . $onlineServer . "prep-hotspot-login?r=" . $encodedReturnUrl);
+        $url = "https://offylink.bytesbay.site/prep-hotspot-login?r=http%3A%2F%2F192.168.1.1%3A8002%2Findex.php%3Fzone%3Dbytesbay1%26redirurl%3Dhttp%253A%252F%252Fconnectivitycheck.gsta";
+        header("Location: ".$url);
       
         exit;
     }
